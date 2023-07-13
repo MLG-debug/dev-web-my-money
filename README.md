@@ -57,7 +57,7 @@
 | Método  | Rota | Descrição |
 | ------------- | ------------- | ------------- |
 | Post  | /transactions/ | Criação  |
-| Delete | /transactions/:transactionId |  | Exclusão  |
+| Delete | /transactions/:transactionId | Exclusão  |
 | Put  | /transactions/:transactionId | Editar  |
 | Get  | /transactions/ | Obter todas com paginação  |
 | Get  | /transactions/details | Obter todas sem paginação e apenas com o tipo e valor  |
