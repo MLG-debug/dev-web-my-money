@@ -2,15 +2,15 @@ import { Injectable } from '@nestjs/common'
 import { Category } from '@app/entities/category'
 import { CategoriesRepository } from '@app/repositories/categories-repository'
 
-interface FindAllCategoriesUseCaseResponse {
+interface GetAllCategoriesUseCaseResponse {
   categories: Category[]
 }
 
 @Injectable()
-export class FindAllCategoriesUseCase {
+export class GetAllCategoriesUseCase {
   constructor(private categoriesRepository: CategoriesRepository) {}
 
-  async execute(): Promise<FindAllCategoriesUseCaseResponse> {
+  async execute(): Promise<GetAllCategoriesUseCaseResponse> {
     const categories = await this.categoriesRepository.findAll()
     return { categories }
   }

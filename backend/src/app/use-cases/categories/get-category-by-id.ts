@@ -3,20 +3,20 @@ import { Category } from '@app/entities/category'
 import { ResourceNotFound } from '../@errors/resource-not-found-error'
 import { CategoriesRepository } from '@app/repositories/categories-repository'
 
-interface FindCategoryByIdUseCaseRequest {
+interface GetCategoryByIdUseCaseRequest {
   categoryId: string
 }
-interface FindCategoryByIdUseCaseResponse {
+interface GetCategoryByIdUseCaseResponse {
   category: Category
 }
 
 @Injectable()
-export class FindCategoryByIdUseCase {
+export class GetCategoryByIdUseCase {
   constructor(private categoriesRepository: CategoriesRepository) {}
 
   async execute({
     categoryId,
-  }: FindCategoryByIdUseCaseRequest): Promise<FindCategoryByIdUseCaseResponse> {
+  }: GetCategoryByIdUseCaseRequest): Promise<GetCategoryByIdUseCaseResponse> {
     const category = await this.categoriesRepository.findById(categoryId)
     if (!category) throw new ResourceNotFound('Categoria não encontrada.')
     return { category }

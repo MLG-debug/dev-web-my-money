@@ -1,15 +1,15 @@
 import { InMemoryCategoriesRepository } from '@infra/database/in-memory-database/repositories/in-memory-categories-repository'
 import { makeCategory } from '@test/factories/category-factory'
-import { FindAllCategoriesUseCase } from './find-all-categories'
+import { GetAllCategoriesUseCase } from './get-all-categories'
 
 let categoriesRepository: InMemoryCategoriesRepository
 
-let sut: FindAllCategoriesUseCase
+let sut: GetAllCategoriesUseCase
 
 describe('Find All Categories Use Case', () => {
   beforeEach(() => {
     categoriesRepository = new InMemoryCategoriesRepository()
-    sut = new FindAllCategoriesUseCase(categoriesRepository)
+    sut = new GetAllCategoriesUseCase(categoriesRepository)
   })
 
   it('should be able to get all categories', async () => {

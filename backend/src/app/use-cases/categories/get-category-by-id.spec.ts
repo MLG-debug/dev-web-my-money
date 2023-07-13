@@ -1,15 +1,15 @@
-import { FindCategoryByIdUseCase } from './find-category-by-id'
 import { InMemoryCategoriesRepository } from '@infra/database/in-memory-database/repositories/in-memory-categories-repository'
 import { makeCategory } from '@test/factories/category-factory'
+import { GetCategoryByIdUseCase } from './get-category-by-id'
 
 let categoriesRepository: InMemoryCategoriesRepository
 
-let sut: FindCategoryByIdUseCase
+let sut: GetCategoryByIdUseCase
 
 describe('Find Category By Id Use Case', () => {
   beforeEach(() => {
     categoriesRepository = new InMemoryCategoriesRepository()
-    sut = new FindCategoryByIdUseCase(categoriesRepository)
+    sut = new GetCategoryByIdUseCase(categoriesRepository)
   })
 
   it('should be able to get category by id', async () => {

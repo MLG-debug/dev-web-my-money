@@ -1,11 +1,12 @@
 import { Body, Controller, Post, Patch, Put, Param, Get } from '@nestjs/common'
-import { FindAllCategoriesUseCase } from './../../../app/use-cases/categories/find-all-categories'
-import { FindCategoryByIdUseCase } from './../../../app/use-cases/categories/find-category-by-id'
 import { ArchiveCategoryUseCase } from './../../../app/use-cases/categories/archive-category'
 import { CreateCategoryBody } from '../dtos/create-category-body.dto'
 import { EditCategoryBody } from '../dtos/edit-category-body.dto'
 import { EditCategoryUseCase } from '@app/use-cases/categories/edit-category'
 import { CreateCategoryUseCase } from './../../../app/use-cases/categories/create-category'
+import { CategoryViewModel } from '../view-models/category-view-model'
+import { GetCategoryByIdUseCase } from '@app/use-cases/categories/get-category-by-id'
+import { GetAllCategoriesUseCase } from '@app/use-cases/categories/get-all-categories'
 
 @Controller('/categories')
 export class CategoriesController {
@@ -13,17 +14,15 @@ export class CategoriesController {
     private createCategory: CreateCategoryUseCase,
     private editCategory: EditCategoryUseCase,
     private archiveCategory: ArchiveCategoryUseCase,
-    private findCategoryById: FindCategoryByIdUseCase,
-    private findAllCategories: FindAllCategoriesUseCase,
+    private getCategoryById: GetCategoryByIdUseCase,
+    private getAllCategories: GetAllCategoriesUseCase,
   ) {}
 
   @Post('/')
   async create(@Body() body: CreateCategoryBody) {
     const { name } = body
     const { category } = await this.createCategory.execute({ name })
-    return {
-      category,
-    }
+    return CategoryViewModel.toHTTP(category)
   }
 
   @Put('/:categoryId')
@@ -45,17 +44,13 @@ export class CategoriesController {
 
   @Get('/')
   async getAll() {
-    const { categories } = await this.findAllCategories.execute()
-    return {
-      categories,
-    }
+    const { categories } = await this.getAllCategories.execute()
+    return categories.map(CategoryViewModel.toHTTP)
   }
 
   @Get('/:categoryId')
   async getOne(@Param('categoryId') categoryId: string) {
-    const { category } = await this.findCategoryById.execute({ categoryId })
-    return {
-      category,
-    }
+    const { category } = await this.getCategoryById.execute({ categoryId })
+    return CategoryViewModel.toHTTP(category)
   }
 }

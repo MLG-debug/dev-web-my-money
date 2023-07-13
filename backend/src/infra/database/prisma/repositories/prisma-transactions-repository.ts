@@ -2,13 +2,16 @@ import { Transaction } from '@app/entities/Transaction'
 import {
   FindByCategoryProps,
   FindByDateProps,
-  FindByYearProps,
+  FindMonthlyOutcomeSumsByYearResponse,
   Paginate,
   SearchProps,
   TransactionsRepository,
 } from '@app/repositories/transactions-repository'
 import { PrismaService } from '../prisma.service'
-import { PrismaTransactionMapper } from '../mappers/prisma-transaction-mapper'
+import {
+  PrismaTransactionMapper,
+  RawTransactionWithCategory,
+} from '../mappers/prisma-transaction-mapper'
 import { Injectable } from '@nestjs/common'
 
 const PAGE_SIZE = 10
@@ -21,9 +24,14 @@ export class PrismaTransactionRepository implements TransactionsRepository {
     const raw = PrismaTransactionMapper.toPrisma(transaction)
     const transactionCreated = await this.prisma.transaction.create({
       data: raw,
+      include: {
+        category: true,
+      },
     })
 
-    return PrismaTransactionMapper.toDomain(transactionCreated)
+    return PrismaTransactionMapper.toDomainWithCategory(
+      transactionCreated as RawTransactionWithCategory,
+    )
   }
 
   async findById(transactionId: string) {
@@ -40,15 +48,37 @@ export class PrismaTransactionRepository implements TransactionsRepository {
     return PrismaTransactionMapper.toDomain(transaction)
   }
 
-  async findAll({ page }: Paginate) {
-    const skip = (page - 1) * PAGE_SIZE
+  async findAll(props: Paginate) {
+    const pagination = {} as any
+
+    if (props !== undefined) {
+      const skip = (props.page - 1) * PAGE_SIZE
+      pagination.skip = skip
+      pagination.take = PAGE_SIZE
+    }
 
     const transactions = await this.prisma.transaction.findMany({
-      skip,
-      take: PAGE_SIZE,
+      ...pagination,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     })
 
-    return transactions.map((t) => PrismaTransactionMapper.toDomain(t))
+    if (transactions.length === 0) return []
+
+    return transactions.map((t) => {
+      return PrismaTransactionMapper.toDomainWithCategory(
+        t as RawTransactionWithCategory,
+      )
+    })
   }
 
   async findByDate(props: FindByDateProps) {
@@ -65,13 +95,54 @@ export class PrismaTransactionRepository implements TransactionsRepository {
       },
       skip,
       take: PAGE_SIZE,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     })
 
-    return transactions.map((t) => PrismaTransactionMapper.toDomain(t))
+    if (transactions.length === 0) return []
+
+    return transactions.map((t) => {
+      return PrismaTransactionMapper.toDomainWithCategory(
+        t as RawTransactionWithCategory,
+      )
+    })
   }
 
-  async findByYear(props: FindByYearProps) {
-    const { year } = props
+  // async findByYear(props: FindByYearProps) {
+  //   const { year, page } = props
+
+  //   const skip = (page - 1) * PAGE_SIZE
+
+  //   const transactions = await this.prisma.transaction.findMany({
+  //     where: {
+  //       date: {
+  //         gte: new Date(year, 0, 1),
+  //         lte: new Date(year, 11, 31),
+  //       },
+  //     },
+  //     skip,
+  //     take: PAGE_SIZE,
+  //     orderBy: {
+  //       createdAt: 'desc',
+  //     },
+  //   })
+
+  //   return transactions.map((t) => PrismaTransactionMapper.toDomain(t))
+  // }
+
+  async findMonthlyOutcomeSumsByYear(
+    year: number,
+  ): Promise<FindMonthlyOutcomeSumsByYearResponse> {
+    const monthlyExpenseSums = Array(12).fill(0)
 
     const transactions = await this.prisma.transaction.findMany({
       where: {
@@ -82,7 +153,17 @@ export class PrismaTransactionRepository implements TransactionsRepository {
       },
     })
 
-    return transactions.map((t) => PrismaTransactionMapper.toDomain(t))
+    if (transactions.length === 0) return { months: [] }
+
+    transactions.forEach((transaction) => {
+      if (transaction.type === 'OUTCOME') {
+        const month = transaction.date.getMonth()
+        const expense = transaction.price
+        monthlyExpenseSums[month] += expense
+      }
+    })
+
+    return { months: monthlyExpenseSums }
   }
 
   async findByCategory(props: FindByCategoryProps) {
@@ -96,9 +177,26 @@ export class PrismaTransactionRepository implements TransactionsRepository {
       },
       skip,
       take: PAGE_SIZE,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     })
 
-    return transactions.map((t) => PrismaTransactionMapper.toDomain(t))
+    if (transactions.length === 0) return []
+
+    return transactions.map((t) => {
+      return PrismaTransactionMapper.toDomainWithCategory(
+        t as RawTransactionWithCategory,
+      )
+    })
   }
 
   async search(props: SearchProps) {
@@ -128,9 +226,26 @@ export class PrismaTransactionRepository implements TransactionsRepository {
       },
       skip,
       take: PAGE_SIZE,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     })
 
-    return transactions.map((t) => PrismaTransactionMapper.toDomain(t))
+    if (transactions.length === 0) return []
+
+    return transactions.map((t) => {
+      return PrismaTransactionMapper.toDomainWithCategory(
+        t as RawTransactionWithCategory,
+      )
+    })
   }
 
   async delete(transactionId: string) {

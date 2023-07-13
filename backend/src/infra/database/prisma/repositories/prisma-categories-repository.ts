@@ -52,6 +52,9 @@ export class PrismaCategoriesRepository implements CategoriesRepository {
       where: {
         archived: false,
       },
+      orderBy: {
+        name: 'desc',
+      },
     })
 
     return categories.map(PrismaCategoryMapper.toDomain)

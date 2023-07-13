@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto'
 import { Replace } from 'src/helpers/Replace'
+import { Category } from './category'
 
 export type TransactionTypes = 'OUTCOME' | 'INCOME'
 
@@ -9,6 +10,8 @@ export interface ITransactionProperties {
   type: TransactionTypes
   date: Date
   categoryId: string
+
+  category?: Category
 
   createdAt: Date
   updatedAt?: Date
@@ -72,6 +75,14 @@ export class Transaction {
 
   public set categoryId(value: string) {
     this.props.categoryId = value
+  }
+
+  public get category(): Category {
+    return this.props.category
+  }
+
+  public set category(value: Category) {
+    this.props.category = value
   }
 
   public get createdAt(): Date {

@@ -2,10 +2,10 @@ import { Transaction } from '@app/entities/transaction'
 import {
   Paginate,
   FindByDateProps,
-  FindByYearProps,
   FindByCategoryProps,
   SearchProps,
   TransactionsRepository,
+  FindMonthlyOutcomeSumsByYearResponse,
 } from '@app/repositories/transactions-repository'
 
 const PAGE_SIZE = 10
@@ -26,7 +26,12 @@ export class InMemoryTransactionsRepository implements TransactionsRepository {
   async findAll({ page }: Paginate) {
     const startIndex = (page - 1) * PAGE_SIZE
     const endIndex = startIndex + PAGE_SIZE
-    return this.transactions.slice(startIndex, endIndex)
+
+    if (page) {
+      return this.transactions.slice(startIndex, endIndex)
+    } else {
+      return this.transactions
+    }
   }
 
   async findByDate({ startDate, endDate, page }: FindByDateProps) {
@@ -45,13 +50,27 @@ export class InMemoryTransactionsRepository implements TransactionsRepository {
     return paginatedTransactions
   }
 
-  async findByYear(props: FindByYearProps): Promise<Transaction[]> {
+  async findMonthlyOutcomeSumsByYear(
+    year: number,
+  ): Promise<FindMonthlyOutcomeSumsByYearResponse> {
     const filteredTransactions = this.transactions.filter((transaction) => {
       const transactionDate = transaction.date
-      return transactionDate.getFullYear() === props.year
+      return transactionDate.getFullYear() === year
     })
 
-    return filteredTransactions
+    const monthlyOutcomeSums = filteredTransactions.reduce(
+      (acc, transaction) => {
+        const transactionMonth = transaction.date.getMonth()
+        const transactionOutcome = transaction.price
+        acc[transactionMonth] += transactionOutcome
+        return acc
+      },
+      Array(12).fill(0),
+    )
+
+    return {
+      months: monthlyOutcomeSums,
+    }
   }
 
   async findByCategory({ categoryId, page }: FindByCategoryProps) {

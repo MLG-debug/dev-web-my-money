@@ -4,7 +4,6 @@ import { GetTransactionsByDateUseCase } from './../../../app/use-cases/transacti
 import { GetTransactionsByCategoryUseCase } from './../../../app/use-cases/transactions/get-transactions-by-category'
 import { GetTransactionByIdUseCase } from './../../../app/use-cases/transactions/get-transaction-by-id'
 import { GetAllTransactionsUseCase } from './../../../app/use-cases/transactions/get-all-transactions'
-import { GetAllOutcomeTransactionsByYearUseCase } from './../../../app/use-cases/transactions/get-all-outcome-transactions-by-year'
 import { EditTransactionUseCase } from './../../../app/use-cases/transactions/edit-transaction'
 import { DeleteTransactionUseCase } from './../../../app/use-cases/transactions/delete-transaction'
 import {
@@ -23,6 +22,10 @@ import { EditTransactionBody } from '../dtos/edit-transaction-body.dtos'
 import { GetTransactionsBySearchQuery } from '../dtos/get-transactions-by-search-query.dto'
 import { GetTransactionsByDateQuery } from '../dtos/get-transactions-by-date-query.dto'
 import { GetTransactionsByYearQuery } from '../dtos/get-transactions-by-year-query.dto'
+import { TransactionViewModel } from '../view-models/transaction-view-model'
+import { GetMonthlyOutcomeSumsByYearUseCase } from '@app/use-cases/transactions/get-all-outcome-transactions-by-year'
+import { GetAllTransactionsDetailsUseCase } from '@app/use-cases/transactions/get-all-transactions-details'
+import { FindAllTransactionsDetailsViewModel } from '../view-models/find-all-transactions-details-view-model'
 
 @Controller('/transactions')
 export class TransactionsController {
@@ -30,8 +33,9 @@ export class TransactionsController {
     private createTransaction: CreateTransactionUseCase,
     private deleteTransaction: DeleteTransactionUseCase,
     private editTransaction: EditTransactionUseCase,
-    private getAllOutcomeTransactionsByYear: GetAllOutcomeTransactionsByYearUseCase,
+    private getMonthlyOutcomeSumsByYear: GetMonthlyOutcomeSumsByYearUseCase,
     private getAllTransactions: GetAllTransactionsUseCase,
+    private getAllTransactionsDetails: GetAllTransactionsDetailsUseCase,
     private getTransactionById: GetTransactionByIdUseCase,
     private getTransactionsByCategory: GetTransactionsByCategoryUseCase,
     private getTransactionsByDate: GetTransactionsByDateUseCase,
@@ -48,19 +52,18 @@ export class TransactionsController {
       price,
       type,
     })
-    return {
-      transaction,
-    }
+    console.log(transaction)
+    return TransactionViewModel.toHTTP(transaction)
   }
 
   @Delete('/:transactionId')
-  async delete(@Param('transactionId') transactionId) {
+  async delete(@Param('transactionId') transactionId: string) {
     await this.deleteTransaction.execute({ transactionId })
   }
 
   @Put('/:transactionId')
   async edit(
-    @Param('transactionId') transactionId,
+    @Param('transactionId') transactionId: string,
     @Body() body: EditTransactionBody,
   ) {
     const { description, categoryId, date, price, type } = body
@@ -77,39 +80,31 @@ export class TransactionsController {
   @Get('/')
   async getAll(@Query() { page = 1 }: PaginationQuery) {
     const { transactions } = await this.getAllTransactions.execute({ page })
-    return {
-      transactions,
-    }
+    return transactions.map(TransactionViewModel.toHTTP)
+  }
+
+  @Get('/details')
+  async getAllDetails() {
+    const { transactions } = await this.getAllTransactionsDetails.execute()
+    return transactions.map(FindAllTransactionsDetailsViewModel.toHTTP)
   }
 
   @Get('/year')
-  async getOutcomeByYear(
-    @Query() { year }: GetTransactionsByYearQuery,
-    @Query() { page = 1 }: PaginationQuery,
-  ) {
-    const { transactions } = await this.getAllOutcomeTransactionsByYear.execute(
-      {
-        year,
-        page,
-      },
-    )
-    return {
-      transactions,
-    }
+  async getOutcomeByYear(@Query() { year }: GetTransactionsByYearQuery) {
+    const { months } = await this.getMonthlyOutcomeSumsByYear.execute({ year })
+    return months
   }
 
   @Get('/category/:categoryId')
   async getByCategory(
-    @Param('categoryId') categoryId,
+    @Param('categoryId') categoryId: string,
     @Query() { page = 1 }: PaginationQuery,
   ) {
     const { transactions } = await this.getTransactionsByCategory.execute({
       categoryId,
       page,
     })
-    return {
-      transactions,
-    }
+    return transactions.map(TransactionViewModel.toHTTP)
   }
 
   @Get('/date')
@@ -122,9 +117,7 @@ export class TransactionsController {
       endDate,
       page,
     })
-    return {
-      transactions,
-    }
+    return transactions.map(TransactionViewModel.toHTTP)
   }
 
   @Get('/search')
@@ -136,18 +129,14 @@ export class TransactionsController {
       query,
       page,
     })
-    return {
-      transactions,
-    }
+    return transactions.map(TransactionViewModel.toHTTP)
   }
 
   @Get('/:transactionId')
-  async getOne(@Param('transactionId') transactionId) {
+  async getOne(@Param('transactionId') transactionId: string) {
     const { transaction } = await this.getTransactionById.execute({
       transactionId,
     })
-    return {
-      transaction,
-    }
+    return TransactionViewModel.toHTTP(transaction)
   }
 }

@@ -1,29 +1,24 @@
-import { Transaction } from '@app/entities/transaction'
 import { TransactionsRepository } from '@app/repositories/transactions-repository'
 import { Injectable } from '@nestjs/common'
 
-interface GetAllOutcomeTransactionsByYearUseCaseRequest {
+interface GetMonthlyOutcomeSumsByYearUseCaseRequest {
   year: number
-  page: number
 }
 
-interface GetAllOutcomeTransactionsByYearUseCaseResponse {
-  transactions: Transaction[]
+interface GetMonthlyOutcomeSumsByYearUseCaseResponse {
+  months: number[]
 }
 
 @Injectable()
-export class GetAllOutcomeTransactionsByYearUseCase {
+export class GetMonthlyOutcomeSumsByYearUseCase {
   constructor(private transactionsRepository: TransactionsRepository) {}
 
   async execute({
     year,
-    page,
-  }: GetAllOutcomeTransactionsByYearUseCaseRequest): Promise<GetAllOutcomeTransactionsByYearUseCaseResponse> {
-    const transactions = await this.transactionsRepository.findByYear({
-      page,
-      year,
-    })
+  }: GetMonthlyOutcomeSumsByYearUseCaseRequest): Promise<GetMonthlyOutcomeSumsByYearUseCaseResponse> {
+    const { months } =
+      await this.transactionsRepository.findMonthlyOutcomeSumsByYear(year)
 
-    return { transactions }
+    return { months }
   }
 }

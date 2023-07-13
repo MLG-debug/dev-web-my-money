@@ -12,20 +12,24 @@ export interface FindByDateProps extends Paginate {
   startDate: Date
   endDate: Date
 }
-export interface FindByYearProps extends Paginate {
-  year: number
-}
 
 export interface FindByCategoryProps extends Paginate {
   categoryId: string
 }
 
+export interface FindMonthlyOutcomeSumsByYearResponse {
+  months: number[]
+}
+
 export abstract class TransactionsRepository {
   abstract create(transaction: Transaction): Promise<Transaction>
   abstract findById(transactionId: string): Promise<Transaction | null>
-  abstract findAll(props: Paginate): Promise<Transaction[] | null>
+  abstract findAll(props?: Paginate): Promise<Transaction[] | null>
   abstract findByDate(props: FindByDateProps): Promise<Transaction[] | null>
-  abstract findByYear(props: FindByYearProps): Promise<Transaction[] | null>
+  abstract findMonthlyOutcomeSumsByYear(
+    year: number,
+  ): Promise<FindMonthlyOutcomeSumsByYearResponse>
+
   abstract findByCategory(
     props: FindByCategoryProps,
   ): Promise<Transaction[] | null>

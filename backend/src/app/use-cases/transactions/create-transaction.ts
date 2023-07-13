@@ -31,8 +31,9 @@ export class CreateTransactionUseCase {
     price,
     type,
   }: CreateTransactionUseCaseRequest): Promise<CreateTransactionUseCaseResponse> {
-    const category = await this.categoriesRepository.findById(categoryId)
-    if (!category) throw new ResourceNotFound('Categoria não encontrada.')
+    const categoryFound = await this.categoriesRepository.findById(categoryId)
+    if (!categoryFound) throw new ResourceNotFound('Categoria não encontrada.')
+
     const newTransaction = new Transaction({
       categoryId,
       date: new Date(date),
@@ -40,7 +41,8 @@ export class CreateTransactionUseCase {
       price,
       type,
     })
-    await this.transactionsRepository.create(newTransaction)
-    return { transaction: newTransaction }
+
+    const transaction = await this.transactionsRepository.create(newTransaction)
+    return { transaction }
   }
 }
