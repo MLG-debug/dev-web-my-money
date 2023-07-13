@@ -45,23 +45,27 @@
 
 ### Rotas:
 ### Categorias:
-``- Post: '/'      // Criação``
-``- Put: '/:categoryId'      // Edição`
-``- Patch: '/archive/:categoryId'      // Arquivar``
-``- Get: '/'      // Obter todas sem paginação``
-``- Get: '/:categoryId'      // Obter pelo ID``
+| Método  | Rota | Descrição |
+| ------------- | ------------- | ------------- |
+| Post  | /  | Criação  |
+| Put  | /:categoryId  | Edição  |
+| Patch  | /archive/:categoryId  | Arquivar  |
+| Get  | /  | Obter todas sem paginação  |
+| Get  | /:categoryId  | Obter pelo ID  |
 
 ### Transações:
-``Post('/')      // Criação``
-``Delete('/:transactionId')      // Exclusão``
-``Put('/:transactionId')      // Editar``
-``Get('/')      // Obter todas com paginação``
-``Get('/details')      // Obter todas sem paginação e apenas com o tipo e valor``
-``Get('/year')      // Obter todos os gastos mensais por ano``
-``Get('/category/:categoryId')      // Obter todas por categoria``
-``Get('/date')      // Obter todas por um intervalo de datas``
-``Get('/search')      // Busca por transações pela query no campo descrição``
-``Get('/:transactionId')      // Obter pelo ID``
+| Método  | Rota | Descrição |
+| ------------- | ------------- | ------------- |
+| Post  | / | Criação  |
+| Delete /:transactionId |  | Exclusão  |
+| Put  | /:transactionId | Editar  |
+| Get  | / | Obter todas com paginação  |
+| Get  | /details | Obter todas sem paginação e apenas com o tipo e valor  |
+| Get  | /year | Obter todos os gastos mensais por ano  |
+| Get  | /category/:categoryId | Obter todas por categoria  |
+| Get  | /date | Obter todas por um intervalo de datas  |
+| Get  | /search | Busca por transações pela query no campo descrição  |
+| Get  | /:transactionId | Obter pelo ID |
 
 ### Bibliotecas usadas:
 - Nest.js: Nest.js é um framework para desenvolvimento de aplicativos em Node.js que utiliza a arquitetura modular e orientada a serviços, proporcionando uma experiência semelhante ao Angular para a construção de aplicativos backend robustos e escaláveis.
