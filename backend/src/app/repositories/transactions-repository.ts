@@ -21,10 +21,18 @@ export interface FindMonthlyOutcomeSumsByYearResponse {
   months: number[]
 }
 
+interface Pagination {
+  totalPages: number
+}
+
+export interface FindAllResponse extends Pagination {
+  transactions: Transaction[]
+}
+
 export abstract class TransactionsRepository {
   abstract create(transaction: Transaction): Promise<Transaction>
   abstract findById(transactionId: string): Promise<Transaction | null>
-  abstract findAll(props?: Paginate): Promise<Transaction[] | null>
+  abstract findAll(props?: Paginate): Promise<FindAllResponse | null>
   abstract findByDate(props: FindByDateProps): Promise<Transaction[] | null>
   abstract findMonthlyOutcomeSumsByYear(
     year: number,
@@ -32,9 +40,9 @@ export abstract class TransactionsRepository {
 
   abstract findByCategory(
     props: FindByCategoryProps,
-  ): Promise<Transaction[] | null>
+  ): Promise<FindAllResponse | null>
 
-  abstract search(props: SearchProps): Promise<Transaction[] | null>
+  abstract search(props: SearchProps): Promise<FindAllResponse | null>
 
   abstract delete(transactionId: string): Promise<void>
   abstract save(transaction: Transaction): Promise<void>

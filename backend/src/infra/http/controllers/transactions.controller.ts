@@ -79,8 +79,13 @@ export class TransactionsController {
 
   @Get('/')
   async getAll(@Query() { page = 1 }: PaginationQuery) {
-    const { transactions } = await this.getAllTransactions.execute({ page })
-    return transactions.map(TransactionViewModel.toHTTP)
+    const { transactions, totalPages } = await this.getAllTransactions.execute({
+      page,
+    })
+    return {
+      transactions: transactions.map(TransactionViewModel.toHTTP),
+      totalPages,
+    }
   }
 
   @Get('/details')
@@ -100,11 +105,15 @@ export class TransactionsController {
     @Param('categoryId') categoryId: string,
     @Query() { page = 1 }: PaginationQuery,
   ) {
-    const { transactions } = await this.getTransactionsByCategory.execute({
-      categoryId,
-      page,
-    })
-    return transactions.map(TransactionViewModel.toHTTP)
+    const { transactions, totalPages } =
+      await this.getTransactionsByCategory.execute({
+        categoryId,
+        page,
+      })
+    return {
+      transactions: transactions.map(TransactionViewModel.toHTTP),
+      totalPages,
+    }
   }
 
   @Get('/date')
@@ -125,11 +134,15 @@ export class TransactionsController {
     @Query() { query }: GetTransactionsBySearchQuery,
     @Query() { page = 1 }: PaginationQuery,
   ) {
-    const { transactions } = await this.getTransactionsByQuery.execute({
-      query,
-      page,
-    })
-    return transactions.map(TransactionViewModel.toHTTP)
+    const { transactions, totalPages } =
+      await this.getTransactionsByQuery.execute({
+        query,
+        page,
+      })
+    return {
+      transactions: transactions.map(TransactionViewModel.toHTTP),
+      totalPages,
+    }
   }
 
   @Get('/:transactionId')

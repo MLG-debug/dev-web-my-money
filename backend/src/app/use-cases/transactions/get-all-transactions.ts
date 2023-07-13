@@ -8,6 +8,7 @@ interface GetAllTransactionsUseCaseRequest {
 
 interface GetAllTransactionsUseCaseResponse {
   transactions: Transaction[]
+  totalPages: number
 }
 
 @Injectable()
@@ -17,7 +18,8 @@ export class GetAllTransactionsUseCase {
   async execute({
     page,
   }: GetAllTransactionsUseCaseRequest): Promise<GetAllTransactionsUseCaseResponse> {
-    const transactions = await this.transactionsRepository.findAll({ page })
-    return { transactions }
+    const { transactions, totalPages } =
+      await this.transactionsRepository.findAll({ page })
+    return { transactions, totalPages }
   }
 }

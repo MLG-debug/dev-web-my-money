@@ -50,6 +50,15 @@ export class PrismaTransactionRepository implements TransactionsRepository {
 
   async findAll(props: Paginate) {
     const pagination = {} as any
+    const totalTransactions = await this.prisma.transaction.count({
+      where: {
+        category: {
+          archived: false,
+        },
+      },
+    })
+
+    const totalPages = Math.ceil(totalTransactions / PAGE_SIZE)
 
     if (props !== undefined) {
       const skip = (props.page - 1) * PAGE_SIZE
@@ -72,13 +81,20 @@ export class PrismaTransactionRepository implements TransactionsRepository {
       },
     })
 
-    if (transactions.length === 0) return []
+    if (transactions.length === 0)
+      return {
+        totalPages: 0,
+        transactions: [],
+      }
 
-    return transactions.map((t) => {
-      return PrismaTransactionMapper.toDomainWithCategory(
-        t as RawTransactionWithCategory,
-      )
-    })
+    return {
+      transactions: transactions.map((t) => {
+        return PrismaTransactionMapper.toDomainWithCategory(
+          t as RawTransactionWithCategory,
+        )
+      }),
+      totalPages,
+    }
   }
 
   async findByDate(props: FindByDateProps) {
@@ -168,6 +184,16 @@ export class PrismaTransactionRepository implements TransactionsRepository {
 
   async findByCategory(props: FindByCategoryProps) {
     const { categoryId, page } = props
+    const totalTransactions = await this.prisma.transaction.count({
+      where: {
+        category: {
+          id: categoryId,
+          archived: false,
+        },
+      },
+    })
+
+    const totalPages = Math.ceil(totalTransactions / PAGE_SIZE)
 
     const skip = (page - 1) * PAGE_SIZE
 
@@ -190,17 +216,41 @@ export class PrismaTransactionRepository implements TransactionsRepository {
       },
     })
 
-    if (transactions.length === 0) return []
+    if (transactions.length === 0)
+      return {
+        totalPages: 0,
+        transactions: [],
+      }
 
-    return transactions.map((t) => {
-      return PrismaTransactionMapper.toDomainWithCategory(
-        t as RawTransactionWithCategory,
-      )
-    })
+    return {
+      transactions: transactions.map((t) => {
+        return PrismaTransactionMapper.toDomainWithCategory(
+          t as RawTransactionWithCategory,
+        )
+      }),
+      totalPages,
+    }
   }
 
   async search(props: SearchProps) {
     const { query, page } = props
+
+    const totalTransactions = await this.prisma.transaction.count({
+      where: {
+        category: {
+          archived: false,
+        },
+        OR: [
+          {
+            description: {
+              contains: query,
+            },
+          },
+        ],
+      },
+    })
+
+    const totalPages = Math.ceil(totalTransactions / PAGE_SIZE)
 
     const skip = (page - 1) * PAGE_SIZE
 
@@ -239,13 +289,20 @@ export class PrismaTransactionRepository implements TransactionsRepository {
       },
     })
 
-    if (transactions.length === 0) return []
+    if (transactions.length === 0)
+      return {
+        totalPages: 0,
+        transactions: [],
+      }
 
-    return transactions.map((t) => {
-      return PrismaTransactionMapper.toDomainWithCategory(
-        t as RawTransactionWithCategory,
-      )
-    })
+    return {
+      transactions: transactions.map((t) => {
+        return PrismaTransactionMapper.toDomainWithCategory(
+          t as RawTransactionWithCategory,
+        )
+      }),
+      totalPages,
+    }
   }
 
   async delete(transactionId: string) {

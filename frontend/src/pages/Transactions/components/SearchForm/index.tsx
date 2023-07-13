@@ -19,6 +19,12 @@ const searchFormSchema = z.object({
 type SearchFormInputs = z.infer<typeof searchFormSchema>
 
 export const SearchFormComponent = () => {
+  const fetchTransactionsBySearch = useContextSelector(
+    TransactionsContext,
+    (context) => {
+      return context.fetchTransactionsBySearch
+    },
+  )
   const fetchTransactions = useContextSelector(
     TransactionsContext,
     (context) => {
@@ -35,10 +41,18 @@ export const SearchFormComponent = () => {
   })
 
   const handleSearchTransactions = async (data: SearchFormInputs) => {
-    await fetchTransactions({
-      page: 1,
-      query: data.query,
-    })
+    try {
+      if (data.query !== '') {
+        await fetchTransactionsBySearch({
+          page: 1,
+          query: data.query,
+        })
+      } else {
+        await fetchTransactions({
+          page: 1,
+        })
+      }
+    } catch (error) {}
   }
 
   return (

@@ -35,6 +35,7 @@ export interface Transaction {
   createdAt: string
 }
 export interface TransactionDetail {
+  id: string
   type: 'INCOME' | 'OUTCOME'
   price: number
 }
@@ -57,13 +58,17 @@ interface FetchTransactionsByCategoryProps {
 }
 
 interface TransactionContextType {
+  totalPages: number
   transactions: Transaction[]
   transactionsDetails: TransactionDetail[]
   fetchTransactions: (props: FetchTransactionsProps) => Promise<void>
   fetchTransactionsByCategory: (
     props: FetchTransactionsByCategoryProps,
   ) => Promise<void>
+  fetchTransactionsBySearch: (props: FetchTransactionsProps) => Promise<void>
+  loadMore: (page: number) => Promise<void>
   createTransaction: (data: CreateTransactionInput) => Promise<void>
+  deleteTransaction: (id: string) => Promise<void>
 }
 
 interface TransactionsProviderProps {
@@ -80,15 +85,41 @@ export const TransactionsProvider = ({
     TransactionDetail[]
   >([])
 
+  const [totalPages, setTotalPages] = useState(1)
+  const [currentSearchType, setCurrentSearchType] = useState<
+    'all' | 'search' | 'category'
+  >('all')
+
   const fetchTransactions = useCallback(
     async (props: FetchTransactionsProps) => {
       const response = await api.get('/transactions', {
         params: {
-          page: props.page,
+          page: props.page || 1,
+          search: props.query,
+        },
+      })
+
+      setTotalPages(response.data.totalPages)
+      setCurrentSearchType('all')
+
+      setTransactions(response.data.transactions)
+    },
+    [],
+  )
+
+  const fetchTransactionsBySearch = useCallback(
+    async (props: FetchTransactionsProps) => {
+      const response = await api.get('/transactions/search', {
+        params: {
+          page: props.page || 1,
           query: props.query,
         },
       })
-      setTransactions(response.data)
+
+      setTotalPages(response.data.totalPages)
+      setCurrentSearchType('search')
+
+      setTransactions(response.data.transactions)
     },
     [],
   )
@@ -99,11 +130,17 @@ export const TransactionsProvider = ({
         '/transactions/category/' + props.categoryId,
         {
           params: {
-            page: props.page,
+            page: props.page || 1,
           },
         },
       )
-      setTransactions(response.data)
+
+      console.log(response.data.totalPages)
+
+      setTotalPages(response.data.totalPages)
+      setCurrentSearchType('category')
+
+      setTransactions(response.data.transactions)
     },
     [],
   )
@@ -113,6 +150,34 @@ export const TransactionsProvider = ({
     if (response.data) {
       setTransactionsDetails(response.data)
     }
+  }, [])
+
+  const loadMore = useCallback(
+    async (page: number) => {
+      if (currentSearchType === 'all') {
+        await fetchTransactions({ page })
+      } else if (currentSearchType === 'search') {
+        await fetchTransactionsBySearch({ page })
+      } else if (currentSearchType === 'category') {
+        await fetchTransactionsByCategory({
+          page,
+          categoryId: transactions[0].category.id,
+        })
+      }
+    },
+    [
+      currentSearchType,
+      fetchTransactions,
+      fetchTransactionsBySearch,
+      fetchTransactionsByCategory,
+      transactions,
+    ],
+  )
+
+  const deleteTransaction = useCallback(async (id: string) => {
+    await api.delete(`/transactions/${id}`)
+    setTransactions((state) => state.filter((t) => t.id !== id))
+    setTransactionsDetails((state) => state.filter((t) => t.id !== id))
   }, [])
 
   // useCallback verifica se a função alterou algo, se sim, ela é recriada em memória
@@ -133,6 +198,7 @@ export const TransactionsProvider = ({
         createdAt: new Date(),
       })
       setTransactions((state) => [response.data, ...state])
+      setTransactionsDetails((state) => [response.data, ...state])
     },
     [],
   )
@@ -140,12 +206,16 @@ export const TransactionsProvider = ({
   useEffect(() => {
     fetchTransactions({})
     fetchTransactionsDetails()
-  }, [fetchTransactions, fetchTransactionsDetails])
+  }, [])
 
   return (
     <TransactionsContext.Provider
       value={{
+        totalPages,
+        loadMore,
+        deleteTransaction,
         transactions,
+        fetchTransactionsBySearch,
         transactionsDetails,
         fetchTransactions,
         fetchTransactionsByCategory,

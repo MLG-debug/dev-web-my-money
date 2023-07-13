@@ -9,6 +9,7 @@ interface GetTransactionsByQueryUseCaseRequest {
 
 interface GetTransactionsByQueryUseCaseResponse {
   transactions: Transaction[]
+  totalPages: number
 }
 
 @Injectable()
@@ -19,11 +20,12 @@ export class GetTransactionsByQueryUseCase {
     query,
     page,
   }: GetTransactionsByQueryUseCaseRequest): Promise<GetTransactionsByQueryUseCaseResponse> {
-    const transactions = await this.transactionsRepository.search({
-      page,
-      query,
-    })
+    const { transactions, totalPages } =
+      await this.transactionsRepository.search({
+        page,
+        query,
+      })
 
-    return { transactions }
+    return { transactions, totalPages }
   }
 }

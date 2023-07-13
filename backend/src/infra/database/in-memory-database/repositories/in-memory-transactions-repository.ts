@@ -28,9 +28,15 @@ export class InMemoryTransactionsRepository implements TransactionsRepository {
     const endIndex = startIndex + PAGE_SIZE
 
     if (page) {
-      return this.transactions.slice(startIndex, endIndex)
+      return {
+        transactions: this.transactions.slice(startIndex, endIndex),
+        totalPages: this.transactions.length,
+      }
     } else {
-      return this.transactions
+      return {
+        transactions: this.transactions,
+        totalPages: this.transactions.length,
+      }
     }
   }
 
@@ -85,7 +91,10 @@ export class InMemoryTransactionsRepository implements TransactionsRepository {
       endIndex,
     )
 
-    return paginatedTransactions
+    return {
+      transactions: paginatedTransactions,
+      totalPages: filteredTransactions.length,
+    }
   }
 
   async search({ page, query }: SearchProps) {
@@ -102,7 +111,10 @@ export class InMemoryTransactionsRepository implements TransactionsRepository {
       endIndex,
     )
 
-    return paginatedTransactions
+    return {
+      transactions: paginatedTransactions,
+      totalPages: filteredTransactions.length,
+    }
   }
 
   async delete(transactionId: string) {

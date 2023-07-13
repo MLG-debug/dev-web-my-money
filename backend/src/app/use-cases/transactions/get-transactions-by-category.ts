@@ -11,6 +11,7 @@ interface GetTransactionsByCategoryUseCaseRequest {
 
 interface GetTransactionsByCategoryUseCaseResponse {
   transactions: Transaction[]
+  totalPages: number
 }
 
 @Injectable()
@@ -27,11 +28,15 @@ export class GetTransactionsByCategoryUseCase {
     const category = await this.categoriesRepository.findById(categoryId)
     if (!category) throw new ResourceNotFound('Categoria não encontrada.')
 
-    const transactions = await this.transactionsRepository.findByCategory({
-      categoryId,
-      page,
-    })
+    const { transactions, totalPages } =
+      await this.transactionsRepository.findByCategory({
+        categoryId,
+        page,
+      })
 
-    return { transactions }
+    return {
+      transactions,
+      totalPages,
+    }
   }
 }
